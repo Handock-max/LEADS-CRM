@@ -5,6 +5,8 @@
 
 
 
+
+
   - Configure Supabase client with environment variables from .env
   - Create environment validation with Zod schema
   - Setup error handling for missing or invalid Supabase credentials

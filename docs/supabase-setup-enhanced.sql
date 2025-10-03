@@ -164,7 +164,7 @@ select
     count(l.id) filter (where l.status = 'gagne') as gagnes,
     count(l.id) filter (where l.status = 'perdu') as perdus,
     round(
-        (count(l.id) filter (where l.status = 'gagne')::float / 
+        (count(l.id) filter (where l.status = 'gagne')::numeric / 
          nullif(count(l.id) filter (where l.status in ('gagne', 'perdu')), 0)) * 100, 2
     ) as conversion_rate
 from campaigns c
