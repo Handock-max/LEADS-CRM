@@ -41,7 +41,7 @@ const AppContent = () => {
 
   // Render main app if connected
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/LEADS-CRM">
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/crm" element={<AppLayout><CRM /></AppLayout>} />
