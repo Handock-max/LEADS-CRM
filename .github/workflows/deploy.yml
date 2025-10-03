@@ -33,7 +33,7 @@ jobs:
         VITE_APP_NAME: "Ash CRM"
         VITE_APP_VERSION: "1.0.0"
         VITE_APP_ENVIRONMENT: "production"
-        VITE_BASE_URL: "/${{ github.event.repository.name }}/"
+        VITE_BASE_URL: ${{ secrets.VITE_BASE_URL }}
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
