@@ -57,36 +57,38 @@ export async function testSupabaseConnection(): Promise<{ success: boolean; erro
 }
 
 // Error handler for Supabase-specific errors
-export function handleSupabaseError(error: any): string {
+export function handleSupabaseError(error: unknown): string {
   if (!error) return 'An unknown error occurred';
 
+  const errorObj = error as { message?: string; code?: string };
+
   // Auth errors
-  if (error.message?.includes('Invalid login credentials')) {
+  if (errorObj.message?.includes('Invalid login credentials')) {
     return 'Invalid email or password. Please check your credentials and try again.';
   }
   
-  if (error.message?.includes('Email not confirmed')) {
+  if (errorObj.message?.includes('Email not confirmed')) {
     return 'Please check your email and click the confirmation link before signing in.';
   }
 
-  if (error.message?.includes('Invalid API key')) {
+  if (errorObj.message?.includes('Invalid API key')) {
     return 'Invalid Supabase configuration. Please contact support.';
   }
 
   // Network errors
-  if (error.message?.includes('fetch')) {
+  if (errorObj.message?.includes('fetch')) {
     return 'Network error. Please check your internet connection and try again.';
   }
 
   // Database errors
-  if (error.code === 'PGRST301') {
+  if (errorObj.code === 'PGRST301') {
     return 'Access denied. You do not have permission to perform this action.';
   }
 
-  if (error.code === 'PGRST116') {
+  if (errorObj.code === 'PGRST116') {
     return 'Database table not found. Please ensure the database is properly set up.';
   }
 
   // Generic error fallback
-  return error.message || 'An unexpected error occurred. Please try again.';
+  return errorObj.message || 'An unexpected error occurred. Please try again.';
 }

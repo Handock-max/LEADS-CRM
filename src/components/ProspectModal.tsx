@@ -125,7 +125,7 @@ export const ProspectModal = ({ open, onOpenChange, prospect, onSave }: Prospect
             </div>
             <div className="space-y-2">
               <Label htmlFor="statut">Statut *</Label>
-              <Select value={formData.statut} onValueChange={(value: any) => setFormData({ ...formData, statut: value })}>
+              <Select value={formData.statut} onValueChange={(value: string) => setFormData({ ...formData, statut: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
