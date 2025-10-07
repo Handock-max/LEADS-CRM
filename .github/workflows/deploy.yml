@@ -13,6 +13,9 @@ jobs:
       contents: read
       pages: write
       id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
     - name: Checkout
@@ -42,11 +45,15 @@ jobs:
         VITE_MOCK_DATA: "false"
         # VITE_BASE_URL is now hardcoded in vite.config.ts
 
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./dist
+        
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
-        force_orphan: true
-        cname: # Add your custom domain here if needed
+      id: deployment
+      uses: actions/deploy-pages@v4
