@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, AdminRoute, ManagerRoute } from "./components/ProtectedRoute";
+import { AuthModeIndicator } from "./components/AuthModeIndicator";
 import Login from "./pages/Login";
 import CRM from "./pages/CRM";
 import Dashboard from "./pages/Dashboard";
@@ -59,6 +60,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
+        <AuthModeIndicator />
         <Toaster />
         <Sonner />
         <AppContent />

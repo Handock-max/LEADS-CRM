@@ -100,17 +100,30 @@ src/
 3. **Implémenter les fonctionnalités CRM** avec l'authentification en place
 4. **Déployer** avec le mode Supabase activé
 
+## Indicateur de Mode
+
+En développement, tu verras un badge en haut à droite qui indique le mode actuel :
+- 🧪 **MOCK AUTH** : Mode mock activé
+- 🚀 **SUPABASE** : Mode Supabase activé
+
 ## Dépannage
 
 ### L'application ne démarre pas
 - Vérifie que le fichier `.env` existe
 - Assure-toi que `VITE_MOCK_AUTH=true` pour commencer
+- Si erreur de validation Supabase : vérifie que `VITE_MOCK_AUTH=true` dans `.env`
 
 ### Erreur de connexion en mode mock
 - Utilise exactement les emails et mots de passe listés ci-dessus
 - Vérifie la console pour les messages de debug
+- Regarde l'indicateur de mode pour confirmer que le mock est actif
 
 ### Erreur en mode Supabase
 - Vérifie tes variables d'environnement Supabase
 - Assure-toi que les tables sont créées avec le script SQL
 - Regarde la console réseau pour les erreurs API
+- L'indicateur doit afficher 🚀 SUPABASE
+
+### Erreur "Invalid Supabase URL format"
+- Cette erreur apparaît si `VITE_MOCK_AUTH=false` mais que les URLs Supabase ne sont pas configurées
+- Solution : Soit configure Supabase, soit remets `VITE_MOCK_AUTH=true`
