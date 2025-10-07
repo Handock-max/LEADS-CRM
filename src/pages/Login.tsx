@@ -48,20 +48,8 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (user && userRole) {
-      // Redirect based on role
-      switch (userRole.role) {
-        case 'admin':
-          navigate('/crm', { replace: true });
-          break;
-        case 'manager':
-          navigate('/dashboard', { replace: true });
-          break;
-        case 'agent':
-          navigate('/dashboard', { replace: true });
-          break;
-        default:
-          navigate('/crm', { replace: true });
-      }
+      // Redirect to CRM for all authenticated users
+      navigate('/crm', { replace: true });
     }
   }, [user, userRole, navigate]);
 

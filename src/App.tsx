@@ -27,11 +27,11 @@ const AppContent = () => {
         <Route 
           path="/crm" 
           element={
-            <AdminRoute>
+            <ProtectedRoute requiredRoles={['admin', 'manager', 'agent']}>
               <AppLayout>
                 <CRM />
               </AppLayout>
-            </AdminRoute>
+            </ProtectedRoute>
           } 
         />
         
@@ -47,7 +47,7 @@ const AppContent = () => {
         />
         
         {/* Root redirect */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/crm" replace />} />
         
         {/* Catch-all route */}
         <Route path="*" element={<NotFound />} />

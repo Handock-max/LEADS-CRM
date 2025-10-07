@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { logout } from '@/lib/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 const menuItems = [
   { title: 'CRM', url: '/crm', icon: Users },
@@ -23,10 +23,15 @@ const menuItems = [
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
