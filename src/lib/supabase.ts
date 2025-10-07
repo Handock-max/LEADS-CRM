@@ -6,10 +6,6 @@ let _supabase: SupabaseClient | null = null;
 
 export function getSupabaseClient(): SupabaseClient {
   if (!_supabase) {
-    if (env.VITE_MOCK_AUTH) {
-      throw new Error('Supabase client should not be used in mock mode');
-    }
-    
     _supabase = createClient(
       env.VITE_SUPABASE_URL,
       env.VITE_SUPABASE_ANON_KEY,
@@ -31,30 +27,16 @@ export function getSupabaseClient(): SupabaseClient {
   return _supabase;
 }
 
-// Export supabase for backward compatibility (only use when not in mock mode)
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(target, prop) {
-    if (env.VITE_MOCK_AUTH) {
-      throw new Error(`Supabase client accessed in mock mode. Property: ${String(prop)}`);
-    }
-    return getSupabaseClient()[prop as keyof SupabaseClient];
-  }
-});
+// Export supabase for backward compatibility
+export const supabase = getSupabaseClient();
 
 // Test Supabase connection and display appropriate error messages
 export async function testSupabaseConnection(): Promise<{ success: boolean; error?: string }> {
-  if (env.VITE_MOCK_AUTH) {
-    return {
-      success: false,
-      error: 'Supabase connection test not available in mock mode'
-    };
-  }
-
   try {
     const client = getSupabaseClient();
     
     // Test basic connection by attempting to get the current session
-    const { data, error } = await client.auth.getSession();
+    const { error } = await client.auth.getSession();
     
     if (error) {
       console.error('Supabase connection error:', error);
@@ -88,38 +70,38 @@ export async function testSupabaseConnection(): Promise<{ success: boolean; erro
 }
 
 // Error handler for Supabase-specific errors
-export function handleSupabaseError(error: unknown): string {
-  if (!error) return 'An unknown error occurred';
+export function handleSupabaseError(error: unknown): Error {
+  if (!error) return new Error('An unknown error occurred');
 
   const errorObj = error as { message?: string; code?: string };
 
   // Auth errors
   if (errorObj.message?.includes('Invalid login credentials')) {
-    return 'Invalid email or password. Please check your credentials and try again.';
+    return new Error('Invalid email or password. Please check your credentials and try again.');
   }
   
   if (errorObj.message?.includes('Email not confirmed')) {
-    return 'Please check your email and click the confirmation link before signing in.';
+    return new Error('Please check your email and click the confirmation link before signing in.');
   }
 
   if (errorObj.message?.includes('Invalid API key')) {
-    return 'Invalid Supabase configuration. Please contact support.';
+    return new Error('Invalid Supabase configuration. Please contact support.');
   }
 
   // Network errors
   if (errorObj.message?.includes('fetch')) {
-    return 'Network error. Please check your internet connection and try again.';
+    return new Error('Network error. Please check your internet connection and try again.');
   }
 
   // Database errors
   if (errorObj.code === 'PGRST301') {
-    return 'Access denied. You do not have permission to perform this action.';
+    return new Error('Access denied. You do not have permission to perform this action.');
   }
 
   if (errorObj.code === 'PGRST116') {
-    return 'Database table not found. Please ensure the database is properly set up.';
+    return new Error('Database table not found. Please ensure the database is properly set up.');
   }
 
   // Generic error fallback
-  return errorObj.message || 'An unexpected error occurred. Please try again.';
+  return new Error(errorObj.message || 'An unexpected error occurred. Please try again.');
 }

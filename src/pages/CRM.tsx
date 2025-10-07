@@ -5,23 +5,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ProspectModal } from '@/components/ProspectModal';
 import { StatusBadge } from '@/components/StatusBadge';
-import { mockProspects, Prospect } from '@/lib/mockData';
-import { getCurrentUser } from '@/lib/auth';
+import { Prospect } from '@/lib/mockData';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 
 const CRM = () => {
-  const [prospects, setProspects] = useState<Prospect[]>(mockProspects);
+  const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = getCurrentUser();
     if (!user) {
-      navigate('/');
+      navigate('/login');
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   const handleAddProspect = () => {
     setSelectedProspect(null);
@@ -120,7 +120,7 @@ const CRM = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       <ProspectModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}

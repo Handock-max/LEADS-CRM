@@ -1,11 +1,9 @@
 import { User } from '@supabase/supabase-js';
 import { Workspace, UserRole } from '@/types/auth';
-import { env } from './env';
 import { getSupabaseClient, handleSupabaseError } from './supabase';
-import { mockAuthService, MOCK_USERS } from './mockAuth';
 
-// Unified auth service interface
-export interface AuthService {
+// Auth service interface
+interface AuthService {
   signIn(email: string, password: string): Promise<{ user: User | null; error: Error | null }>;
   signOut(): Promise<{ error: Error | null }>;
   getSession(): Promise<{ user: User | null; error: Error | null }>;
@@ -19,45 +17,58 @@ export interface AuthService {
 
 // Supabase auth service implementation
 class SupabaseAuthService implements AuthService {
-  private getClient() {
-    return getSupabaseClient();
-  }
+  private supabase = getSupabaseClient();
 
   async signIn(email: string, password: string): Promise<{ user: User | null; error: Error | null }> {
     try {
-      const client = this.getClient();
-      const { data, error } = await client.auth.signInWithPassword({
-        email: email.trim(),
+      const { data, error } = await this.supabase.auth.signInWithPassword({
+        email,
         password,
       });
 
       if (error) {
-        return { user: null, error };
+        return { user: null, error: handleSupabaseError(error) };
       }
 
       return { user: data.user, error: null };
     } catch (error) {
-      return { user: null, error: error as Error };
+      return { 
+        user: null, 
+        error: error instanceof Error ? error : new Error('Unknown error during sign in') 
+      };
     }
   }
 
   async signOut(): Promise<{ error: Error | null }> {
     try {
-      const client = this.getClient();
-      const { error } = await client.auth.signOut();
-      return { error };
+      const { error } = await this.supabase.auth.signOut();
+      
+      if (error) {
+        return { error: handleSupabaseError(error) };
+      }
+
+      return { error: null };
     } catch (error) {
-      return { error: error as Error };
+      return { 
+        error: error instanceof Error ? error : new Error('Unknown error during sign out') 
+      };
     }
   }
 
   async getSession(): Promise<{ user: User | null; error: Error | null }> {
     try {
-      const client = this.getClient();
-      const { data: { session }, error } = await client.auth.getSession();
-      return { user: session?.user || null, error };
+      const { data: { session }, error } = await this.supabase.auth.getSession();
+      
+      if (error) {
+        return { user: null, error: handleSupabaseError(error) };
+      }
+
+      return { user: session?.user || null, error: null };
     } catch (error) {
-      return { user: null, error: error as Error };
+      return { 
+        user: null, 
+        error: error instanceof Error ? error : new Error('Unknown error getting session') 
+      };
     }
   }
 
@@ -67,14 +78,22 @@ class SupabaseAuthService implements AuthService {
     error: Error | null;
   }> {
     try {
-      const client = this.getClient();
-      
-      // Fetch user role and workspace in a single query with join
-      const { data: userRoleData, error: roleError } = await client
+      // Get user role and workspace from Supabase
+      const { data: userRoleData, error: roleError } = await this.supabase
         .from('user_roles')
         .select(`
-          *,
-          workspace:workspaces(*)
+          id,
+          role,
+          created_at,
+          updated_at,
+          workspace:workspaces (
+            id,
+            name,
+            slug,
+            settings,
+            created_at,
+            updated_at
+          )
         `)
         .eq('user_id', user.id)
         .eq('is_active', true)
@@ -84,45 +103,56 @@ class SupabaseAuthService implements AuthService {
         return {
           workspace: null,
           userRole: null,
-          error: new Error('Failed to load user permissions. Please contact your administrator.')
+          error: handleSupabaseError(roleError)
         };
       }
 
-      if (!userRoleData) {
+      if (!userRoleData || !userRoleData.workspace) {
         return {
           workspace: null,
           userRole: null,
-          error: new Error('No active workspace found. Please contact your administrator.')
+          error: new Error('No active workspace found for user')
         };
       }
 
-      const userRole: UserRole = {
-        id: userRoleData.id,
-        user_id: userRoleData.user_id,
-        workspace_id: userRoleData.workspace_id,
-        role: userRoleData.role,
-        is_active: userRoleData.is_active,
-        invited_by: userRoleData.invited_by,
-        created_at: userRoleData.created_at,
-        updated_at: userRoleData.updated_at,
+      const workspace: Workspace = {
+        id: userRoleData.workspace.id,
+        name: userRoleData.workspace.name,
+        slug: userRoleData.workspace.slug,
+        settings: userRoleData.workspace.settings || {},
+        created_at: userRoleData.workspace.created_at || new Date().toISOString(),
+        updated_at: userRoleData.workspace.updated_at || new Date().toISOString()
       };
 
-      const workspace: Workspace = userRoleData.workspace;
+      const userRole: UserRole = {
+        id: userRoleData.id || '',
+        role: userRoleData.role,
+        workspace_id: workspace.id,
+        user_id: user.id,
+        is_active: true,
+        created_at: userRoleData.created_at || new Date().toISOString(),
+        updated_at: userRoleData.updated_at || new Date().toISOString()
+      };
 
-      return { workspace, userRole, error: null };
+      return {
+        workspace,
+        userRole,
+        error: null
+      };
+
     } catch (error) {
       return {
         workspace: null,
         userRole: null,
-        error: new Error(handleSupabaseError(error))
+        error: error instanceof Error ? error : new Error('Unknown error fetching user data')
       };
     }
   }
 
   onAuthStateChange(callback: (user: User | null) => void): { unsubscribe: () => void } {
-    const client = this.getClient();
-    const { data: { subscription } } = client.auth.onAuthStateChange(
+    const { data: { subscription } } = this.supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Supabase auth event:', event, session?.user?.email || 'no user');
         callback(session?.user || null);
       }
     );
@@ -133,37 +163,5 @@ class SupabaseAuthService implements AuthService {
   }
 }
 
-// Mock auth service wrapper to match interface
-class MockAuthServiceWrapper implements AuthService {
-  async signIn(email: string, password: string): Promise<{ user: User | null; error: Error | null }> {
-    return mockAuthService.signIn(email, password);
-  }
-
-  async signOut(): Promise<{ error: Error | null }> {
-    return mockAuthService.signOut();
-  }
-
-  async getSession(): Promise<{ user: User | null; error: Error | null }> {
-    return mockAuthService.getSession();
-  }
-
-  async getUserData(user: User): Promise<{
-    workspace: Workspace | null;
-    userRole: UserRole | null;
-    error: Error | null;
-  }> {
-    return mockAuthService.getUserData(user);
-  }
-
-  onAuthStateChange(callback: (user: User | null) => void): { unsubscribe: () => void } {
-    return mockAuthService.onAuthStateChange(callback);
-  }
-}
-
-// Export the appropriate service based on environment
-export const authService: AuthService = env.VITE_MOCK_AUTH 
-  ? new MockAuthServiceWrapper()
-  : new SupabaseAuthService();
-
-// Export mock users for development reference
-export { MOCK_USERS };
+// Export the auth service
+export const authService: AuthService = new SupabaseAuthService();

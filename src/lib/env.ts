@@ -1,17 +1,10 @@
 import { z } from 'zod';
 
-// First, get the mock auth setting to determine validation strategy
-const isMockAuth = import.meta.env.VITE_MOCK_AUTH !== 'false';
-
-// Environment validation schema with conditional Supabase validation
+// Environment validation schema
 const envSchema = z.object({
-  // Supabase validation only when not in mock mode
-  VITE_SUPABASE_URL: isMockAuth
-    ? z.string().default('https://placeholder.supabase.co')
-    : z.string().url('Invalid Supabase URL format'),
-  VITE_SUPABASE_ANON_KEY: isMockAuth
-    ? z.string().default('placeholder-key')
-    : z.string().min(1, 'Supabase anonymous key is required'),
+  // Supabase configuration
+  VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL format'),
+  VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anonymous key is required'),
 
   // App configuration
   VITE_APP_NAME: z.string().default('Ash CRM'),
@@ -21,26 +14,12 @@ const envSchema = z.object({
 
   // Development flags
   VITE_DEBUG_MODE: z.string().transform((val: string) => val === 'true').default('false'),
-  VITE_MOCK_DATA: z.string().transform((val: string) => val === 'true').default('false'),
-  VITE_MOCK_AUTH: z.string().transform((val: string) => val === 'true').default('true'),
 });
 
 // Validate and export environment variables
 function validateEnv() {
   try {
-    const parsed = envSchema.parse(import.meta.env);
-
-    // Additional validation for production mode
-    if (!parsed.VITE_MOCK_AUTH && parsed.VITE_APP_ENVIRONMENT === 'production') {
-      if (parsed.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
-        throw new Error('Real Supabase URL required in production mode');
-      }
-      if (parsed.VITE_SUPABASE_ANON_KEY === 'placeholder-key') {
-        throw new Error('Real Supabase anonymous key required in production mode');
-      }
-    }
-
-    return parsed;
+    return envSchema.parse(import.meta.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`);

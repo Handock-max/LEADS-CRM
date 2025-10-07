@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initializeAuth = async () => {
       try {
-        console.log(`🔐 Initializing auth with ${env.VITE_MOCK_AUTH ? 'MOCK' : 'SUPABASE'} service`);
+        console.log('🔐 Initializing auth with Supabase service');
         
         // Get initial session
         const { user, error } = await authService.getSession();
