@@ -7,7 +7,7 @@ const envSchema = z.object({
   VITE_APP_NAME: z.string().default('Ash CRM'),
   VITE_APP_VERSION: z.string().default('1.0.0'),
   VITE_APP_ENVIRONMENT: z.enum(['development', 'staging', 'production']).default('development'),
-  VITE_BASE_URL: z.string().default('/'),
+  VITE_BASE_URL: z.string().default('/'), // Note: Base URL is now hardcoded in vite.config.ts and App.tsx
   VITE_DEBUG_MODE: z.string().transform(val => val === 'true').default('false'),
   VITE_MOCK_DATA: z.string().transform(val => val === 'true').default('false'),
 });

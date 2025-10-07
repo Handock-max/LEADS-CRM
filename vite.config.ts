@@ -4,6 +4,10 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
+  // GitHub Pages base URL - Change this if you rename the repository or use a custom domain
+  // For GitHub Pages: '/REPOSITORY-NAME/' (e.g., '/LEADS-CRM/')
+  // For custom domain: '/'
+  // Repository: https://github.com/Handock-max/LEADS-CRM
   base: '/LEADS-CRM/',
   server: {
     host: "::",
