@@ -7,6 +7,7 @@ import { ProspectModal } from '@/components/ProspectModal';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Prospect } from '@/lib/mockData';
 import { useAuth } from '@/contexts/AuthContext';
+import { prospectService } from '@/lib/prospectService';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 
@@ -14,14 +15,45 @@ const CRM = () => {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Charger les prospects au démarrage
   useEffect(() => {
     if (!user) {
       navigate('/login');
+      return;
     }
+
+    loadProspects();
   }, [user, navigate]);
+
+  const loadProspects = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await prospectService.getProspects();
+      
+      if (error) {
+        toast({ 
+          title: 'Erreur', 
+          description: error.message,
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      setProspects(data || []);
+    } catch (error) {
+      toast({ 
+        title: 'Erreur', 
+        description: 'Impossible de charger les prospects',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddProspect = () => {
     setSelectedProspect(null);
@@ -33,20 +65,95 @@ const CRM = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveProspect = (prospect: Prospect) => {
-    if (selectedProspect) {
-      setProspects(prospects.map((p) => (p.id === prospect.id ? prospect : p)));
-      toast({ title: 'Prospect modifié', description: 'Les modifications ont été enregistrées' });
-    } else {
-      setProspects([...prospects, prospect]);
-      toast({ title: 'Prospect ajouté', description: 'Le nouveau prospect a été ajouté avec succès' });
+  const handleSaveProspect = async (prospect: Prospect) => {
+    try {
+      if (selectedProspect) {
+        // Mise à jour
+        const { data, error } = await prospectService.updateProspect(prospect.id, {
+          entreprise: prospect.entreprise,
+          contact: prospect.contact,
+          poste: prospect.poste,
+          email: prospect.email,
+          telephone: prospect.telephone,
+          statut: prospect.statut,
+          prochaine_action: prospect.prochaineAction,
+          notes: prospect.notes
+        });
+
+        if (error) {
+          toast({ 
+            title: 'Erreur', 
+            description: error.message,
+            variant: 'destructive'
+          });
+          return;
+        }
+
+        if (data) {
+          setProspects(prospects.map((p) => (p.id === data.id ? data : p)));
+          toast({ title: 'Prospect modifié', description: 'Les modifications ont été enregistrées' });
+        }
+      } else {
+        // Création
+        const { data, error } = await prospectService.createProspect({
+          entreprise: prospect.entreprise,
+          contact: prospect.contact,
+          poste: prospect.poste,
+          email: prospect.email,
+          telephone: prospect.telephone,
+          statut: prospect.statut,
+          prochaine_action: prospect.prochaineAction,
+          notes: prospect.notes
+        });
+
+        if (error) {
+          toast({ 
+            title: 'Erreur', 
+            description: error.message,
+            variant: 'destructive'
+          });
+          return;
+        }
+
+        if (data) {
+          setProspects([data, ...prospects]);
+          toast({ title: 'Prospect ajouté', description: 'Le nouveau prospect a été ajouté avec succès' });
+        }
+      }
+    } catch (error) {
+      toast({ 
+        title: 'Erreur', 
+        description: 'Une erreur est survenue lors de la sauvegarde',
+        variant: 'destructive'
+      });
     }
   };
 
-  const handleDeleteProspect = (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce prospect ?')) {
+  const handleDeleteProspect = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce prospect ?')) {
+      return;
+    }
+
+    try {
+      const { error } = await prospectService.deleteProspect(id);
+      
+      if (error) {
+        toast({ 
+          title: 'Erreur', 
+          description: error.message,
+          variant: 'destructive'
+        });
+        return;
+      }
+
       setProspects(prospects.filter((p) => p.id !== id));
       toast({ title: 'Prospect supprimé', description: 'Le prospect a été supprimé' });
+    } catch (error) {
+      toast({ 
+        title: 'Erreur', 
+        description: 'Impossible de supprimer le prospect',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -62,6 +169,14 @@ const CRM = () => {
             </Button>
           </CardHeader>
           <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center space-y-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto"></div>
+                  <p className="text-gray-600">Chargement des prospects...</p>
+                </div>
+              </div>
+            ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -117,6 +232,7 @@ const CRM = () => {
                 </TableBody>
               </Table>
             </div>
+            )}
           </CardContent>
         </Card>
       </div>
