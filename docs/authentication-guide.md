@@ -40,6 +40,7 @@ npm run dev
 
 ### Pour passer au Mode Supabase
 
+#### Option 1: Développement Local
 1. Configure ton projet Supabase
 2. Mets à jour ton fichier `.env` :
 ```env
@@ -50,6 +51,24 @@ VITE_SUPABASE_ANON_KEY=ta_clé_anonyme_supabase
 
 3. Exécute le script SQL dans `docs/supabase-setup-enhanced.sql`
 4. Redémarre l'application
+
+#### Option 2: Production (GitHub Pages)
+1. Configure les secrets GitHub :
+   - `VITE_SUPABASE_URL` : Ton URL Supabase
+   - `VITE_SUPABASE_ANON_KEY` : Ta clé anonyme Supabase
+
+2. Le déploiement utilisera automatiquement Supabase (pas de mock en production)
+
+3. Assure-toi que les tables Supabase sont créées avec le script SQL
+
+#### Option 3: Test Production Local
+1. Copie tes vraies valeurs Supabase dans `.env.production`
+2. Lance en mode production :
+```bash
+npm run build:dev  # Build en mode développement
+# ou
+VITE_APP_ENVIRONMENT=production npm run build  # Build production
+```
 
 ## Fonctionnalités Implémentées
 

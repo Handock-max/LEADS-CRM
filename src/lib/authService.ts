@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
 import { Workspace, UserRole } from '@/types/auth';
 import { env } from './env';
-import { supabase, handleSupabaseError } from './supabase';
+import { getSupabaseClient, handleSupabaseError } from './supabase';
 import { mockAuthService, MOCK_USERS } from './mockAuth';
 
 // Unified auth service interface
@@ -19,9 +19,14 @@ export interface AuthService {
 
 // Supabase auth service implementation
 class SupabaseAuthService implements AuthService {
+  private getClient() {
+    return getSupabaseClient();
+  }
+
   async signIn(email: string, password: string): Promise<{ user: User | null; error: Error | null }> {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const client = this.getClient();
+      const { data, error } = await client.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -38,7 +43,8 @@ class SupabaseAuthService implements AuthService {
 
   async signOut(): Promise<{ error: Error | null }> {
     try {
-      const { error } = await supabase.auth.signOut();
+      const client = this.getClient();
+      const { error } = await client.auth.signOut();
       return { error };
     } catch (error) {
       return { error: error as Error };
@@ -47,7 +53,8 @@ class SupabaseAuthService implements AuthService {
 
   async getSession(): Promise<{ user: User | null; error: Error | null }> {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const client = this.getClient();
+      const { data: { session }, error } = await client.auth.getSession();
       return { user: session?.user || null, error };
     } catch (error) {
       return { user: null, error: error as Error };
@@ -60,8 +67,10 @@ class SupabaseAuthService implements AuthService {
     error: Error | null;
   }> {
     try {
+      const client = this.getClient();
+      
       // Fetch user role and workspace in a single query with join
-      const { data: userRoleData, error: roleError } = await supabase
+      const { data: userRoleData, error: roleError } = await client
         .from('user_roles')
         .select(`
           *,
@@ -111,7 +120,8 @@ class SupabaseAuthService implements AuthService {
   }
 
   onAuthStateChange(callback: (user: User | null) => void): { unsubscribe: () => void } {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const client = this.getClient();
+    const { data: { subscription } } = client.auth.onAuthStateChange(
       (event, session) => {
         callback(session?.user || null);
       }

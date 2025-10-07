@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "auth:toggle": "node scripts/toggle-auth-mode.js",
+    "auth:mock": "node -e \"const fs=require('fs'); let env=fs.readFileSync('.env','utf8'); env=env.replace(/VITE_MOCK_AUTH=false/g,'VITE_MOCK_AUTH=true'); fs.writeFileSync('.env',env); console.log('🧪 Mock mode enabled');\"",
+    "auth:supabase": "node -e \"const fs=require('fs'); let env=fs.readFileSync('.env','utf8'); env=env.replace(/VITE_MOCK_AUTH=true/g,'VITE_MOCK_AUTH=false'); fs.writeFileSync('.env',env); console.log('🚀 Supabase mode enabled');\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
