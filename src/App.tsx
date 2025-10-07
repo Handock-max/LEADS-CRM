@@ -2,29 +2,53 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ProtectedRoute, AdminRoute, ManagerRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import CRM from "./pages/CRM";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
 import { AppLayout } from "./components/AppLayout";
-import { useSupabaseConnection } from "./hooks/useSupabaseConnection";
-import { SupabaseConnectionError } from "./components/SupabaseConnectionError";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  // Temporarily bypass Supabase connection for deployment testing
-  // const { isConnected, isLoading, error, retryConnection } = useSupabaseConnection();
-
-  // Render main app directly for now
   return (
     <BrowserRouter basename="/LEADS-CRM" /* Change this if repository name changes - must match vite.config.ts base */>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/crm" element={<AppLayout><CRM /></AppLayout>} />
-        <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        
+        {/* Protected routes */}
+        <Route 
+          path="/crm" 
+          element={
+            <AdminRoute>
+              <AppLayout>
+                <CRM />
+              </AppLayout>
+            </AdminRoute>
+          } 
+        />
+        
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute requiredRoles={['admin', 'manager', 'agent']}>
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Root redirect */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        
+        {/* Catch-all route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
@@ -34,9 +58,11 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AppContent />
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <AppContent />
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

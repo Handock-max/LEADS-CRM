@@ -10,6 +10,7 @@ const envSchema = z.object({
   VITE_BASE_URL: z.string().default('/'), // Note: Base URL is now hardcoded in vite.config.ts and App.tsx
   VITE_DEBUG_MODE: z.string().transform(val => val === 'true').default('false'),
   VITE_MOCK_DATA: z.string().transform(val => val === 'true').default('false'),
+  VITE_MOCK_AUTH: z.string().transform(val => val === 'true').default('true'), // Enable mock auth by default
 });
 
 // Validate and export environment variables
