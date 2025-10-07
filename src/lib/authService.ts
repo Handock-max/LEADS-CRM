@@ -78,21 +78,17 @@ class SupabaseAuthService implements AuthService {
     error: Error | null;
   }> {
     try {
-      // Get user role and workspace from Supabase
+      // Get user role and workspace from Supabase (optimized query)
       const { data: userRoleData, error: roleError } = await this.supabase
         .from('user_roles')
         .select(`
           id,
           role,
-          created_at,
-          updated_at,
+          workspace_id,
           workspace:workspaces (
             id,
             name,
-            slug,
-            settings,
-            created_at,
-            updated_at
+            slug
           )
         `)
         .eq('user_id', user.id)
@@ -119,19 +115,19 @@ class SupabaseAuthService implements AuthService {
         id: userRoleData.workspace.id,
         name: userRoleData.workspace.name,
         slug: userRoleData.workspace.slug,
-        settings: userRoleData.workspace.settings || {},
-        created_at: userRoleData.workspace.created_at || new Date().toISOString(),
-        updated_at: userRoleData.workspace.updated_at || new Date().toISOString()
+        settings: {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       const userRole: UserRole = {
-        id: userRoleData.id || '',
+        id: userRoleData.id,
         role: userRoleData.role,
         workspace_id: workspace.id,
         user_id: user.id,
         is_active: true,
-        created_at: userRoleData.created_at || new Date().toISOString(),
-        updated_at: userRoleData.updated_at || new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       return {
