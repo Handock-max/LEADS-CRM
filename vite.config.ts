@@ -8,7 +8,7 @@ export default defineConfig(({ command }) => ({
   // For GitHub Pages: '/REPOSITORY-NAME/' (e.g., '/LEADS-CRM/')
   // For custom domain: '/'
   // Repository: https://github.com/Handock-max/LEADS-CRM
-  base: '/LEADS-CRM/',
+  base: command === 'build' ? '/LEADS-CRM/' : '/',
   server: {
     host: "::",
     port: 8080,
