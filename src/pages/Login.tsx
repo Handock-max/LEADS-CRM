@@ -192,29 +192,7 @@ const Login = () => {
             </Button>
           </form>
 
-          {/* Demo Accounts */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="text-center space-y-3">
-              <p className="text-sm font-medium text-gray-700">Comptes de démonstration</p>
-              <div className="grid gap-2 text-xs">
-                <div className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
-                  <span className="font-semibold text-yellow-700">Admin:</span>
-                  <span className="text-gray-600">admin@ashcrm.com</span>
-                </div>
-                <div className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
-                  <span className="font-semibold text-blue-700">Manager:</span>
-                  <span className="text-gray-600">manager@ashcrm.com</span>
-                </div>
-                <div className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
-                  <span className="font-semibold text-green-700">Agent:</span>
-                  <span className="text-gray-600">agent@ashcrm.com</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Mot de passe pour tous les comptes: <span className="font-mono bg-gray-100 px-1 rounded">password123</span>
-              </p>
-            </div>
-          </div>
+
         </CardContent>
       </Card>
     </div>
