@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 // Environment validation schema
 const envSchema = z.object({
-  VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL format'),
-  VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anonymous key is required'),
+  VITE_SUPABASE_URL: z.string().url('Invalid Supabase URL format').default('https://placeholder.supabase.co'),
+  VITE_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anonymous key is required').default('placeholder-key'),
   VITE_APP_NAME: z.string().default('Ash CRM'),
   VITE_APP_VERSION: z.string().default('1.0.0'),
   VITE_APP_ENVIRONMENT: z.enum(['development', 'staging', 'production']).default('development'),
