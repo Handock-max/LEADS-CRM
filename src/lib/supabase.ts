@@ -6,6 +6,14 @@ let _supabase: SupabaseClient | null = null;
 
 export function getSupabaseClient(): SupabaseClient {
   if (!_supabase) {
+    if (!env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_ANON_KEY) {
+      console.error('Supabase config:', { 
+        url: env.VITE_SUPABASE_URL ? 'SET' : 'MISSING',
+        key: env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'MISSING'
+      });
+      throw new Error('Supabase configuration missing. Check your environment variables.');
+    }
+    
     _supabase = createClient(
       env.VITE_SUPABASE_URL,
       env.VITE_SUPABASE_ANON_KEY,

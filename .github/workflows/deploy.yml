@@ -32,6 +32,15 @@ jobs:
     # - name: Lint code
     #   run: bun run lint
 
+    - name: Debug secrets (temporary)
+      run: |
+        echo "SUPABASE_URL length: ${#VITE_SUPABASE_URL}"
+        echo "SUPABASE_KEY length: ${#VITE_SUPABASE_ANON_KEY}"
+        echo "URL starts with: ${VITE_SUPABASE_URL:0:20}"
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
     - name: Build application
       run: bun run build
       env:
