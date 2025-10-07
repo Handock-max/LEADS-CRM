@@ -4,20 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { KPICard } from '@/components/KPICard';
 import { mockKPIs, mockWeeklyData, mockStatusDistribution, mockProspects } from '@/lib/mockData';
-import { getCurrentUser } from '@/lib/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const user = getCurrentUser();
     if (!user) {
-      navigate('/');
+      navigate('/login');
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   const handleExportCSV = () => {
     const headers = ['Entreprise', 'Contact', 'Poste', 'Email', 'Téléphone', 'Statut', 'Prochaine action', 'Notes'];

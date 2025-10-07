@@ -48,6 +48,7 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (user && userRole) {
+      console.log('Login: Redirecting to CRM', { user: user.email, role: userRole.role });
       // Redirect to CRM for all authenticated users
       navigate('/crm', { replace: true });
     }

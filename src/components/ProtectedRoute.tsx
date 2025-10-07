@@ -32,13 +32,22 @@ export function ProtectedRoute({
 
   // Redirect to login if not authenticated
   if (!user) {
+    console.log('ProtectedRoute: No user, redirecting to login');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Redirect to unauthorized if no user role found
   if (!userRole) {
+    console.log('ProtectedRoute: No user role, redirecting to unauthorized');
     return <Navigate to="/unauthorized" replace />;
   }
+
+  console.log('ProtectedRoute: Access granted', { 
+    path: location.pathname, 
+    user: user.email, 
+    role: userRole.role,
+    requiredRoles 
+  });
 
   // Check role-based access if roles are specified
   if (requiredRoles.length > 0 && !requiredRoles.includes(userRole.role)) {
