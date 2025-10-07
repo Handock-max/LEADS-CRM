@@ -35,13 +35,6 @@ jobs:
         VITE_APP_ENVIRONMENT: "production"
         # VITE_BASE_URL is now hardcoded in vite.config.ts
 
-    - name: List build output
-      run: |
-        echo "Contents of dist directory:"
-        ls -la dist/
-        echo "Contents of dist/assets (if exists):"
-        ls -la dist/assets/ || echo "No assets directory"
-
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
