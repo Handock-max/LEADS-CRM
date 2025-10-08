@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/auth';
+import { PermissionErrorUtils } from '@/lib/errorUtils';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -39,7 +40,11 @@ export function ProtectedRoute({
   // Redirect to unauthorized if no user role found
   if (!userRole) {
     console.log('ProtectedRoute: No user role, redirecting to unauthorized');
-    return <Navigate to="/unauthorized" replace />;
+    const errorContext = PermissionErrorUtils.createRoleInsufficientError(
+      'utilisateur authentifié',
+      'Aucun rôle trouvé pour cet utilisateur'
+    );
+    return <Navigate to="/unauthorized" state={{ errorContext }} replace />;
   }
 
   console.log('ProtectedRoute: Access granted', { 
@@ -51,7 +56,12 @@ export function ProtectedRoute({
 
   // Check role-based access if roles are specified
   if (requiredRoles.length > 0 && !requiredRoles.includes(userRole.role)) {
-    return <Navigate to="/unauthorized" replace />;
+    const errorContext = PermissionErrorUtils.createPageAccessError(
+      location.pathname,
+      requiredRoles.join(' ou '),
+      `Cette page nécessite l'un des rôles suivants : ${requiredRoles.map(role => PermissionErrorUtils.getRoleName(role)).join(', ')}`
+    );
+    return <Navigate to="/unauthorized" state={{ errorContext }} replace />;
   }
 
   // Render protected content
@@ -92,6 +102,14 @@ export function ManagerRoute({ children }: { children: React.ReactNode }) {
 export function AgentRoute({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute requiredRoles={['admin', 'manager', 'agent']}>
+      {children}
+    </ProtectedRoute>
+  );
+}
+
+export function SuperAdminRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute requiredRoles={['super_admin']}>
       {children}
     </ProtectedRoute>
   );

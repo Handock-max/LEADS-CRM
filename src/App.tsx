@@ -9,6 +9,9 @@ import { ProtectedRoute, AdminRoute, ManagerRoute } from "./components/Protected
 import Login from "./pages/Login";
 import CRM from "./pages/CRM";
 import Dashboard from "./pages/Dashboard";
+import UserManagement from "./pages/UserManagement";
+import WorkspaceSettings from "./pages/WorkspaceSettings";
+import WorkspaceManagement from "./pages/WorkspaceManagement";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
 import { AppLayout } from "./components/AppLayout";
@@ -41,6 +44,39 @@ const AppContent = () => {
             <ProtectedRoute requiredRoles={['admin', 'manager', 'agent']}>
               <AppLayout>
                 <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/user-management" 
+          element={
+            <ProtectedRoute requiredRoles={['admin']}>
+              <AppLayout>
+                <UserManagement />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/workspace-settings" 
+          element={
+            <ProtectedRoute requiredRoles={['admin']}>
+              <AppLayout>
+                <WorkspaceSettings />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/workspace-management" 
+          element={
+            <ProtectedRoute requiredRoles={['super_admin']}>
+              <AppLayout>
+                <WorkspaceManagement />
               </AppLayout>
             </ProtectedRoute>
           } 

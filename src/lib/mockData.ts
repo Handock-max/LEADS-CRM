@@ -8,6 +8,8 @@ export interface Prospect {
   statut: 'nouveau' | 'contacte' | 'relance' | 'rdv' | 'gagne' | 'perdu';
   prochaineAction: string;
   notes: string;
+  created_by?: string;
+  assigned_to?: string;
 }
 
 export const mockProspects: Prospect[] = [

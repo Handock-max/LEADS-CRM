@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useReducer, useCallback } 
 import { User } from '@supabase/supabase-js';
 import { authService } from '@/lib/authService';
 import { AuthContextType, AuthState, Workspace, UserRole } from '@/types/auth';
-import { env } from '@/lib/env';
+import { PermissionService, Permission } from '@/lib/permissionService';
+import { themeService } from '@/lib/themeService';
 
 // Auth reducer for state management
 type AuthAction =
@@ -10,6 +11,8 @@ type AuthAction =
     | { type: 'SET_USER'; payload: User | null }
     | { type: 'SET_WORKSPACE'; payload: Workspace | null }
     | { type: 'SET_USER_ROLE'; payload: UserRole | null }
+    | { type: 'SET_PERMISSIONS'; payload: Permission[] }
+    | { type: 'SET_SUPER_ADMIN'; payload: boolean }
     | { type: 'SET_ERROR'; payload: string | null }
     | { type: 'SET_INITIALIZED'; payload: boolean }
     | { type: 'CLEAR_ERROR' }
@@ -19,6 +22,8 @@ const initialState: AuthState = {
     user: null,
     workspace: null,
     userRole: null,
+    permissions: [],
+    isSuperAdmin: false,
     loading: true,
     error: null,
     initialized: false,
@@ -34,6 +39,10 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
             return { ...state, workspace: action.payload };
         case 'SET_USER_ROLE':
             return { ...state, userRole: action.payload };
+        case 'SET_PERMISSIONS':
+            return { ...state, permissions: action.payload };
+        case 'SET_SUPER_ADMIN':
+            return { ...state, isSuperAdmin: action.payload };
         case 'SET_ERROR':
             return { ...state, error: action.payload, loading: false };
         case 'SET_INITIALIZED':
@@ -209,15 +218,107 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'CLEAR_ERROR' });
     }, []);
 
+    // Switch workspace method (Super Admin only)
+    const switchWorkspace = useCallback(async (workspaceId: string) => {
+        if (!state.user || !state.isSuperAdmin) {
+            throw new Error('Only super admins can switch workspaces');
+        }
+
+        try {
+            dispatch({ type: 'SET_LOADING', payload: true });
+            dispatch({ type: 'CLEAR_ERROR' });
+
+            // Get the new workspace and user role data
+            const { workspace, userRole, error } = await authService.getUserDataForWorkspace(state.user, workspaceId);
+
+            if (error) {
+                throw error;
+            }
+
+            if (!workspace || !userRole) {
+                throw new Error('Workspace not found or access denied');
+            }
+
+            dispatch({ type: 'SET_WORKSPACE', payload: workspace });
+            dispatch({ type: 'SET_USER_ROLE', payload: userRole });
+            dispatch({ type: 'SET_ERROR', payload: null });
+
+        } catch (error) {
+            console.error('Switch workspace error:', error);
+            dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Unknown error occurred' });
+            throw error;
+        } finally {
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    }, [state.user, state.isSuperAdmin]);
+
+    // Permission methods
+    const hasPermission = useCallback((permission: Permission): boolean => {
+        return PermissionService.hasPermission(state.userRole?.role || null, permission);
+    }, [state.userRole]);
+
+    const canPerform = useCallback((
+        action: 'create' | 'read' | 'update' | 'delete' | 'assign',
+        resource: string,
+        context?: any
+    ): boolean => {
+        return PermissionService.canPerform(state.userRole?.role || null, action, resource as any, context);
+    }, [state.userRole]);
+
+    const canAccessRoute = useCallback((route: string): boolean => {
+        return PermissionService.canAccessRoute(state.userRole?.role || null, route);
+    }, [state.userRole]);
+
+    // Update permissions when user role changes
+    useEffect(() => {
+        if (state.userRole) {
+            const permissions = PermissionService.getPermissions(state.userRole.role);
+            dispatch({ type: 'SET_PERMISSIONS', payload: permissions });
+            dispatch({ type: 'SET_SUPER_ADMIN', payload: state.userRole.role === 'super_admin' });
+        } else {
+            dispatch({ type: 'SET_PERMISSIONS', payload: [] });
+            dispatch({ type: 'SET_SUPER_ADMIN', payload: false });
+        }
+    }, [state.userRole]);
+
+    // Apply workspace theme when workspace changes
+    useEffect(() => {
+        if (state.workspace?.settings) {
+            const settings = state.workspace.settings as any;
+            const { primaryColor, secondaryColor, accentColor } = settings;
+            
+            // Apply custom colors if they exist
+            if (primaryColor || secondaryColor || accentColor) {
+                themeService.applyCustomColors({
+                    primaryColor,
+                    secondaryColor,
+                    accentColor
+                });
+            } else {
+                // Reset to default colors if no custom theme
+                themeService.resetToDefaultColors();
+            }
+        } else {
+            // Reset to default colors if no workspace
+            themeService.resetToDefaultColors();
+        }
+    }, [state.workspace]);
+
     const contextValue: AuthContextType = {
         user: state.user,
         workspace: state.workspace,
         userRole: state.userRole,
+        permissions: state.permissions,
+        isSuperAdmin: state.isSuperAdmin,
         signIn,
         signOut,
+        switchWorkspace,
         loading: state.loading,
         error: state.error,
         clearError,
+        hasPermission,
+        canPerform,
+        canAccessRoute,
     };
 
     return (

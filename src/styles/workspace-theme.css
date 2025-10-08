@@ -1,0 +1,142 @@
+/* Workspace Theme Customization */
+
+:root {
+  /* Default theme colors */
+  --color-primary: #3b82f6;
+  --color-secondary: #64748b;
+  --color-accent: #10b981;
+  
+  /* Derived colors for better integration */
+  --color-primary-light: color-mix(in srgb, var(--color-primary) 80%, white);
+  --color-primary-dark: color-mix(in srgb, var(--color-primary) 80%, black);
+  --color-secondary-light: color-mix(in srgb, var(--color-secondary) 80%, white);
+  --color-accent-light: color-mix(in srgb, var(--color-accent) 80%, white);
+}
+
+/* Apply custom colors to key UI elements */
+.workspace-themed {
+  /* Primary buttons and links */
+  --tw-bg-primary: var(--color-primary);
+  --tw-text-primary: var(--color-primary);
+  --tw-border-primary: var(--color-primary);
+  
+  /* Secondary elements */
+  --tw-bg-secondary: var(--color-secondary);
+  --tw-text-secondary: var(--color-secondary);
+  
+  /* Accent elements */
+  --tw-bg-accent: var(--color-accent);
+  --tw-text-accent: var(--color-accent);
+}
+
+/* Custom button styles using workspace colors */
+.btn-workspace-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.btn-workspace-primary:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.btn-workspace-secondary {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: white;
+}
+
+.btn-workspace-accent {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+/* Custom form elements */
+.form-workspace-accent:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/* Custom badges */
+.badge-workspace-primary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-primary);
+}
+
+.badge-workspace-accent {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+}
+
+/* Navigation and header customization */
+.nav-workspace-themed {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+}
+
+.nav-workspace-themed .nav-link {
+  color: white;
+}
+
+.nav-workspace-themed .nav-link:hover {
+  background-color: var(--color-accent);
+}
+
+/* Card and panel customization */
+.card-workspace-accent {
+  border-left: 4px solid var(--color-accent);
+}
+
+.card-workspace-primary {
+  border-left: 4px solid var(--color-primary);
+}
+
+/* Status indicators */
+.status-success {
+  color: var(--color-accent);
+}
+
+.status-primary {
+  color: var(--color-primary);
+}
+
+.status-secondary {
+  color: var(--color-secondary);
+}
+
+/* Custom field preview styles */
+.custom-field-preview {
+  border: 2px dashed var(--color-secondary);
+  background-color: var(--color-secondary-light);
+}
+
+.custom-field-preview.required {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-light);
+}
+
+/* Theme transition animations */
+.theme-transition {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Responsive theme adjustments */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Adjust colors for dark mode if needed */
+    --color-primary-light: color-mix(in srgb, var(--color-primary) 60%, white);
+    --color-primary-dark: color-mix(in srgb, var(--color-primary) 60%, black);
+  }
+}
+
+/* Print styles - use neutral colors */
+@media print {
+  :root {
+    --color-primary: #000000;
+    --color-secondary: #666666;
+    --color-accent: #333333;
+  }
+}
