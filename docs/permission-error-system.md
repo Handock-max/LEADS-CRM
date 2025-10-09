@@ -1,6 +1,14 @@
 # Système de Gestion des Erreurs de Permission (403)
 
-Ce document explique comment utiliser le nouveau système de gestion des erreurs de permission qui fournit des messages d'erreur contextuels et des suggestions d'actions alternatives.
+Ce document explique comment utiliser le système de gestion des erreurs de permission qui fournit des messages d'erreur contextuels et des suggestions d'actions alternatives.
+
+## Objectif
+
+Fournir une expérience utilisateur cohérente et informative lors des erreurs de permission, avec :
+- Messages explicites selon le type de refus d'accès
+- Suggestions d'actions alternatives basées sur le rôle utilisateur
+- Navigation directe vers les pages autorisées
+- Interface moderne et accessible
 
 ## Vue d'ensemble
 
